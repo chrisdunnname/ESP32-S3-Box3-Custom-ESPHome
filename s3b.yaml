@@ -1126,7 +1126,7 @@ media_player:
             then:
               - lambda: |-
                   id(media_state) = true;
-              - script.execute: stop_wake_word
+              # - script.execute: stop_wake_word
             else:
               - lambda: |-
                   id(media_state) = false;
@@ -1147,6 +1147,7 @@ media_player:
     on_play:
       - wait_until:
           - lambda: return id(global_is_assisting) == false;
+      - delay: 1s
     on_announcement:
       # Stop the wake word (mWW or VA) if the mic is capturing
       - if:
