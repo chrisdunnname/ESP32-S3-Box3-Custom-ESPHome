@@ -445,6 +445,7 @@ media_player:
         file: https://github.com/BigBobbas/ESP32-S3-Box3-Custom-ESPHome/raw/main/sounds/awake.flac
     on_state:
       then:
+        - lambda: ESP_LOGD("media_player", "on_state");
         - if:
             condition:
               media_player.is_playing:
@@ -470,10 +471,12 @@ media_player:
             #      decibel_reduction: 0
             #      duration: 1.0s
     on_play:
+      - lambda: ESP_LOGD("media_player", "on_play");
       - wait_until:
           - lambda: return id(global_is_assisting) == false;
       - delay: 1s
     on_announcement:
+      - lambda: ESP_LOGD("media_player", "on_announcement");
       # Stop the wake word (mWW or VA) if the mic is capturing
       - if:
           condition:
@@ -502,6 +505,7 @@ media_player:
             - script.execute: draw_display
     on_idle:
       # Since VA isn't running, this is the end of user-intiated media playback. Restart the wake word.
+      - lambda: ESP_LOGD("media_player", "on_idle");
       - if:
           condition:
             not:
@@ -602,6 +606,7 @@ voice_assistant:
     - script.execute: draw_display
     - script.execute: saver_enabled
   on_stt_vad_end:
+    - lambda: ESP_LOGD("voice_assistant", "on_stt_vad_end");
     - lambda: id(voice_assistant_phase) = ${voice_assist_thinking_phase_id};
     - script.execute: draw_display
   on_stt_end:
@@ -616,6 +621,7 @@ voice_assistant:
     - lambda: id(voice_assistant_phase) = ${voice_assist_replying_phase_id};
     - script.execute: draw_display
   on_tts_end:
+    - lambda: ESP_LOGD("voice_assistant", "on_tts_end");
     - if:
         condition:
           and:
@@ -640,14 +646,17 @@ voice_assistant:
     - delay: 10s
     - script.execute: draw_display
   on_idle:
+    - lambda: ESP_LOGD("voice_assistant", "on_idle");
     - script.execute: draw_display
   on_end:
     # Wait a short amount of time to see if an announcement starts
+    - lambda: ESP_LOGD("voice_assistant", "on_end"); 
     - wait_until:
         condition:
           - media_player.is_announcing:
         timeout: 0.5s
     # Announcement is finished and the I2S bus is free
+    - lambda: ESP_LOGD("voice_assistant", "on_end announcement finished");
     - wait_until:
         - and:
             - not:
@@ -660,6 +669,7 @@ voice_assistant:
     #    duration: 1.0s
     - lambda: id(global_is_assisting) = false;
     # Restart only mWW if enabled; streaming wake words automatically restart
+    - lambda: ESP_LOGD("voice_assistant", "on_end starting wake word again"); 
     - if:
         condition:
           - lambda: return id(wake_word_engine_location).state == "On device";
@@ -954,6 +964,7 @@ script:
     # Starts either mWW or the streaming wake word, depending on the configured location
   - id: start_wake_word
     then:
+      - lambda: ESP_LOGD("script", "start_wake_word");
       - if:
           condition:
             and:
@@ -975,6 +986,7 @@ script:
   # Stops either mWW or the streaming wake word, depending on the configured location
   - id: stop_wake_word
     then:
+      - lambda: ESP_LOGD("script", "stop_wake_word");
       - if:
           condition:
             lambda: return id(wake_word_engine_location).state == "In Home Assistant";
@@ -989,6 +1001,7 @@ script:
   # Set the voice assistant phase to idle or muted, depending on if the software mute switch is activated
   - id: set_idle_or_mute_phase
     then:
+      - lambda: ESP_LOGD("script", "set_idle_or_mute_phase");
       - if:
           condition:
             switch.is_off: mute_switch
